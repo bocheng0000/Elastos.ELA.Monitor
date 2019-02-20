@@ -1,7 +1,6 @@
 package implements
 
 import (
-	"fmt"
 	"github.com/elastos/Elastos.ELA.Monitor/servers"
 	"github.com/elastos/Elastos.ELA.Monitor/utility/log"
 )
@@ -12,23 +11,24 @@ type producerMonitorImplements struct {
 }
 
 func (pmi *producerMonitorImplements) Test(rpc *servers.Rpc) {
-	producers, totalVotes, totalCounts, err := rpc.GetListProducers(0, 100)
+	 listProducers, err := rpc.GetListProducers(0, 100)
 	 if err != nil{
-	 	log.Error(fmt.Sprintf("call failed! %+v", err))
+	 	log.Errorf("call failed! %+v", err)
 	 }
 
-	log.Debug(fmt.Sprintf("producers is %+v", producers[0].NickName))
-	log.Debug(fmt.Sprintf("totalVotes is %+v", totalVotes))
-	log.Debug(fmt.Sprintf("totalCounts is %+v", totalCounts))
+	log.Infof("producers is %+v", listProducers.Producers[0].NickName)
 }
 
 func (pmi *producerMonitorImplements) ReadBlock(rpc *servers.Rpc) {
-	producers, totalVotes, totalCounts, err := rpc.GetListProducers(0, 100)
+	//block, err := rpc.GetBlockByHeight(100)
+	//if err != nil{
+	//	log.Errorf("call failed! %+v", err)
+	//}
+
+	height, err := rpc.GetChainHeight()
 	if err != nil{
-		log.Error(fmt.Sprintf("call failed! %+v", err))
+		log.Errorf("call failed! %+v", err)
 	}
 
-	log.Debug(fmt.Sprintf("producers is %+v", producers[0].NickName))
-	log.Debug(fmt.Sprintf("totalVotes is %+v", totalVotes))
-	log.Debug(fmt.Sprintf("totalCounts is %+v", totalCounts))
+	log.Infof("block height is %+v", height)
 }

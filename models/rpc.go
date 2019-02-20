@@ -7,12 +7,12 @@ type ListProducers struct {
 
 type ListProducersResponse struct {
 	Producers	[]Producer	`json:"producers"`
-	TotalVotes	string 	`json:"totalvotes"`
-	TotalCounts int64 	`json:"totalcounts"`
+	TotalVotes	string 		`json:"totalvotes"`
+	TotalCounts int64 		`json:"totalcounts"`
 }
 
 type Height struct {
-	Height int16	`json:"height"`
+	Height uint32	`json:"height"`
 }
 
 type RpcResponse struct {

@@ -7,7 +7,7 @@ type Producer struct {
 	Url 			string	`json:"url"`
 	Location 		int64	`json:"location"`
 	Active 			bool 	`json:"active"`
-	Votes 			string	`json:"votes"`
+	Votes 			string	`json:"votes"` //TODO change to int64
 	Ip 				string	`json:"ip"`
 	Index 			int16	`json:"index"`
 }

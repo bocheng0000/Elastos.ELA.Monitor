@@ -7,7 +7,7 @@ type Block struct {
 	Confirmations     int    `json:"confirmations"`
 	Difficulty        string `json:"difficulty"`
 	Hash              string `json:"hash"`
-	Height            int    `json:"height"`
+	Height            uint32    `json:"height"`
 	Mediantime        int    `json:"mediantime"`
 	Merkleroot        string `json:"merkleroot"`
 	Minerinfo         string `json:"minerinfo"`

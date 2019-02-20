@@ -2,7 +2,8 @@ package main
 
 import (
 	"github.com/elastos/Elastos.ELA.Monitor/config"
-	"github.com/elastos/Elastos.ELA.Monitor/monitors"
+	"github.com/elastos/Elastos.ELA.Monitor/display"
+	"github.com/elastos/Elastos.ELA.Monitor/logparse"
 	"github.com/elastos/Elastos.ELA.Monitor/nodes"
 	"github.com/elastos/Elastos.ELA.Monitor/utility/log"
 )
@@ -17,9 +18,14 @@ func init() {
 }
 
 func main() {
-	log.Info("Elastos Monitor")
+	log.Info("Welcome To Elastos ELA Monitor")
 	mainChain := config.ConfigManager.MonitorConfig.Nodes.MainChain
 
+	logData := logparse.NewLogData()
+	logParse := logparse.NewLogParse()
 	elaNode := nodes.NewEla(mainChain)
-	monitors.ProducerMonitor.Test(elaNode)
+	display := display.NewDisplay(nil,nil,nil,nil,nil)
+	display.Start(logData, logParse, elaNode)
+
+	//monitors.ProducerMonitor.Start(elaNode)
 }

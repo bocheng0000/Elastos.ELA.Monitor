@@ -1,6 +1,7 @@
 ﻿{
   "Configuration": {
     "Version": 0,
+    "AppName": "Elastos ELA Monitor",
     "Log": {
       "Path": "./logs",
       "Level": 1,
@@ -16,7 +17,9 @@
           "Binary": "127.0.0.1",
           "Host": "127.0.0.1",
           "Port": 8989
-        }
+        },
+        "LogPath": "D:\\DockerFiles\\elastos\\WorkSpace\\test\\onesidemultinode\\test_space\\ela\\ela3\\elastos\\logs\\node",
+        "LogFreshInterval": 5
       }
     }
   }

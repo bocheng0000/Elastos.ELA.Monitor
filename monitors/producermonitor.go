@@ -11,6 +11,7 @@ type producerMonitor struct {
 	Name string
 }
 
-func (producerMonitor *producerMonitor) Test(node *nodes.Ela) {
-	implements.ProducerMonitorImp.Test(node.Rpc)
+func (producerMonitor *producerMonitor) Start(node *nodes.Ela) {
+	//implements.ProducerMonitorImp.Test(node.Rpc)
+	implements.ProducerMonitorImp.ReadBlock(node.Rpc)
 }

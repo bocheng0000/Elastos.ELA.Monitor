@@ -1,0 +1,9 @@
+package: github.com/elastos/Elastos.ELA.Monitor
+import:
+- package: golang.org/x/crypto
+  repo: https://github.com/golang/crypto.git
+  vcs: git
+- package: golang.org/x/sys
+  repo: https://github.com/golang/sys.git
+  vcs: git
+- package: github.com/chzyer/readline

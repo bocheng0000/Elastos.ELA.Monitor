@@ -4,3 +4,4 @@ logs/*
 vendor/*
 Elastos.ELA.Monitor.exe
 .git
+glide.lock
