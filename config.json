@@ -11,14 +11,14 @@
     "Nodes": {
       "MainChain": {
         "Host": "127.0.0.1",
-        "RpcPort": 13336,
-        "RestfulPort": 13334,
+        "RpcPort": 25336,
+        "RestfulPort": 25334,
         "JarServer": {
           "Binary": "127.0.0.1",
           "Host": "127.0.0.1",
           "Port": 8989
         },
-        "LogPath": "D:\\DockerFiles\\elastos\\WorkSpace\\test\\onesidemultinode\\test_space\\ela\\ela3\\elastos\\logs\\node",
+        "LogPath": "D:\\DockerFiles\\elastos\\WorkSpace\\test\\onesidemultinode\\test_space\\dpos\\ela5\\elastos\\logs",
         "LogFreshInterval": 5
       }
     }

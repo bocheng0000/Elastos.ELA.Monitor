@@ -3,6 +3,11 @@ package display
 import (
 	"bytes"
 	"fmt"
+	"github.com/shirou/gopsutil/cpu"
+	"path"
+	"time"
+
+	"github.com/shirou/gopsutil/mem"
 	"github.com/elastos/Elastos.ELA.Monitor/config"
 	"github.com/elastos/Elastos.ELA.Monitor/logparse"
 	"github.com/elastos/Elastos.ELA.Monitor/models"
@@ -10,8 +15,6 @@ import (
 	"github.com/elastos/Elastos.ELA.Monitor/utility/convert"
 	"github.com/elastos/Elastos.ELA.Monitor/utility/error"
 	"github.com/elastos/Elastos.ELA.Monitor/utility/log"
-	"path"
-	"time"
 )
 
 type Display struct {
@@ -34,14 +37,19 @@ func NewDisplay(content *Content, networks *[]string, view *View, evil *Evil, ne
 }
 
 func (display *Display)Start(logData *logparse.LogData, logParse *logparse.LogParse, ela *nodes.Ela) {
-	currentLogFile := logParse.ParseOldLogs(logData)
-	logPath := path.Join(config.ConfigManager.MonitorConfig.Nodes.MainChain.LogPath, currentLogFile)
+	currentNodeLogFile := logParse.ParseOldLogs(logData, "node")
+	currentDposLogFile := logParse.ParseOldLogs(logData, "dpos")
+	nodeLogPath := path.Join(config.ConfigManager.MonitorConfig.Nodes.MainChain.LogPath, "node", currentNodeLogFile)
+	dposLogPath := path.Join(config.ConfigManager.MonitorConfig.Nodes.MainChain.LogPath, "dpos", currentDposLogFile)
 
 	for {
 		time.Sleep(time.Duration(config.ConfigManager.MonitorConfig.Nodes.MainChain.LogFreshInterval) * time.Second)
 
-		err := logParse.ReadLogFile(logData, logPath)
-		errorhelper.Warn(err, "fresh log data failed!")
+		err := logParse.ReadLogFile(logData, nodeLogPath)
+		errorhelper.Warn(err, "fresh node log data failed!")
+
+		err = logParse.ReadLogFile(logData, dposLogPath)
+		errorhelper.Warn(err, "fresh dpos log data failed!")
 
 		display.initDisplay(logData, ela)
 		display.Show()
@@ -50,7 +58,8 @@ func (display *Display)Start(logData *logparse.LogData, logParse *logparse.LogPa
 
 func (display *Display)Show() {
 	log.Infof("-------------- %s --------------", config.ConfigManager.MonitorConfig.AppName)
-	log.Infof("Version: %s \t Height: %d", display.Content.Version, display.Content.Height)
+	log.Infof("Version: %s \t Height: %d \t CPUUsed: %f%% \t MemoryUsed: %f%%",
+		display.Content.Version, display.Content.Height, display.Content.CPUUsed, display.Content.MemoryUsed)
 	log.Infof("Host: %s \t RpcPort: %d \t RestfulPort: %d", display.Content.Version, display.Content.RpcPort, display.Content.RestfulPort)
 
 	log.Info("Network:")
@@ -61,6 +70,9 @@ func (display *Display)Show() {
 	log.Info(hostsBuf.String())
 
 	log.Info("View:")
+	if display.View == nil {
+		log.Warn("No available view data")
+	}
 	log.Infof("Change times: %d", display.View.ChangeTimes)
 	log.Infof("On duty producer: %s \t %s", display.View.OnDutyProducer.NickName, display.View.OnDutyProducer.OwnerPublicKey)
 	log.Infof("Proposal: Total: %s \t Approval: %s \t Decline: %s", len(display.View.Proposal.Approval), len(display.View.Proposal.Decline))
@@ -74,6 +86,9 @@ func (display *Display)Show() {
 	}
 
 	log.Info("Evil:")
+	if display.Evil == nil {
+		log.Warn("No available evil data")
+	}
 	for index := 0; index < len(*display.Evil.Producers); index ++ {
 		log.Infof("NickName: %s \t NodePublicKey: %s \t Vote: %s \t IsActive: %v \t Evidence: %s",
 			(*display.Evil.Producers)[index].NickName,
@@ -84,6 +99,9 @@ func (display *Display)Show() {
 	}
 
 	log.Info("NextView:")
+	if display.NextView == nil {
+		log.Warn("No available next view data")
+	}
 	for index := 0; index < len(*display.NextView.Producers); index ++ {
 		log.Infof("NickName: %s \t NodePublicKey: %s \t Vote: %s \t",
 			(*display.NextView.Producers)[index].NickName,
@@ -105,20 +123,34 @@ func (display *Display) initDisplay(logData *logparse.LogData, ela *nodes.Ela) {
 }
 
 func (display *Display) initCurrentConsensusTime(logData *logparse.LogData) time.Time {
-	return logData.ConsensusStarted.Back().Value.(models.ConsensusMessage).LogTime
+	if logData.ConsensusStarted.Len() == 0 {
+		return time.Now().AddDate(0,0,-1)
+	}
+
+	return (*logData.ConsensusStarted.Back().Value.(*models.ConsensusMessage)).LogTime
 }
 
 func (display *Display) initContent(logData *logparse.LogData, ela *nodes.Ela) *Content {
 	height, _ := ela.Rpc.GetChainHeight()
-	return &Content{logData.Version, height, ela.Host, ela.Rpc.Port, ela.Restful.Port}
+	virtualMemory, _ := mem.VirtualMemory()
+	duration, _ := time.ParseDuration("1s")
+	cpuPercent, _ := cpu.Percent(duration, false)
+	return &Content{logData.Version, height, cpuPercent[0],virtualMemory.UsedPercent,ela.Host, ela.Rpc.Port, ela.Restful.Port}
 }
 
 func (display *Display) initNetworks(logData *logparse.LogData) *[]string {
-	return logData.Network.Back().Value.(models.Network).NbrHosts
+	if logData.Network.Len() == 0 {
+		return &[]string{"Network unavailable!"}
+	}
+	return (*logData.Network.Back().Value.(*models.Network)).NbrHosts
 }
 
 func (display *Display) initView(logData *logparse.LogData, ela *nodes.Ela, listProducers *models.ListProducersResponse) *View {
-	currentView := logData.ViewStarted.Back().Value.(models.ViewStart)
+	if logData.ViewStarted.Len() == 0 {
+		return nil
+	}
+
+	currentView := *logData.ViewStarted.Back().Value.(*models.ViewStart)
 	var onDutyProducer *ProducerMonitor
 	var producerMonitors []ProducerMonitor
 	for index := 0; index < len(listProducers.Producers); index ++ {
@@ -139,7 +171,7 @@ func (display *Display) initView(logData *logparse.LogData, ela *nodes.Ela, list
 
 	var approvals, declines []*string
 	for voteArrived := logData.VoteArrived.Front(); voteArrived != nil; voteArrived = voteArrived.Next() {
-		vote := voteArrived.Value.(models.VoteArrivedMessage)
+		vote := *voteArrived.Value.(*models.VoteArrivedMessage)
 		if display.CurrentConsensusTime.After(vote.LogTime) {
 			continue
 		}

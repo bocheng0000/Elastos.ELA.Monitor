@@ -24,7 +24,7 @@ func main() {
 	logData := logparse.NewLogData()
 	logParse := logparse.NewLogParse()
 	elaNode := nodes.NewEla(mainChain)
-	display := display.NewDisplay(nil,nil,nil,nil,nil)
+	display := display.NewDisplay(nil, nil, nil, nil, nil)
 	display.Start(logData, logParse, elaNode)
 
 	//monitors.ProducerMonitor.Start(elaNode)

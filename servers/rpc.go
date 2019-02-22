@@ -87,12 +87,12 @@ func (rpc *Rpc) callAndReadRpc(method string, params interface{}) (*models.RpcRe
 		return nil, err
 	}
 
-	log.Debug(fmt.Sprintf("response is %+v", string(response)))
+	log.Debugf("response is %+v", string(response))
 	rpcResponse := &models.RpcResponse{}
 	err = json.Unmarshal(response, rpcResponse)
 	if err != nil {
-		log.Error(fmt.Printf("Unmarshal json file err %v", err))
-		log.Error(fmt.Printf("respone is %v", string(response)))
+		log.Errorf("Unmarshal json file err %v", err)
+		log.Errorf("respone is %v", string(response))
 	}
 	return rpcResponse, err
 }
