@@ -1,7 +1,7 @@
-package constants_logmark
+package constants
 
 const (
-	NodeVersion = "Node version"
+	NodeVersion = "Node version:"
 	InternalNbrAddress = "internal nbr address"
 	OnProposalArrived = "[OnProposalArrived]"
 	OnProposalFinished = "[OnProposalFinished]"
@@ -14,4 +14,8 @@ const (
 const (
 	LogTimeParseLayout1 = "2006-01-02 15:04:05"
 	LogTimeParseLayout2 = "2006/01/02 15:04:05"
+)
+
+const (
+	ElaToSelaRate = 100000000
 )

@@ -6,6 +6,6 @@ type Content struct {
 	CPUUsed			float64
 	MemoryUsed		float64
 	Host 			string
-	RpcPort 		int16
-	RestfulPort 	int16
+	RpcPort 		uint16
+	RestfulPort 	uint16
 }

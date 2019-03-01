@@ -10,17 +10,25 @@
     },
     "Nodes": {
       "MainChain": {
-        "Host": "127.0.0.1",
-        "RpcPort": 25336,
-        "RestfulPort": 25334,
+        "Host": "192.168.1.113",
+        "RpcPort": 35336,
+        "RestfulPort": 35334,
         "JarServer": {
           "Binary": "127.0.0.1",
           "Host": "127.0.0.1",
           "Port": 8989
         },
-        "LogPath": "D:\\DockerFiles\\elastos\\WorkSpace\\test\\onesidemultinode\\test_space\\dpos\\ela5\\elastos\\logs",
+        "LogPath": "D:\\DockerFiles\\elastos\\WorkSpace\\test\\onesidemultinode\\test_space\\dpos\\ela4\\elastos\\logs",
         "LogFreshInterval": 5
       }
+    },
+    "Email": {
+      "Host": "smtp.qq.com:25",
+      "UserName": "yiyanwannian04@qq.com",
+      "PassWord": "pafbpryhuqmubdge",
+      "NotifyUser": [
+        "zhouhoufa@elastos.org"
+      ]
     }
   }
 }

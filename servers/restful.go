@@ -6,11 +6,11 @@ import (
 
 type Restful struct {
 	Host string
-	Port int16
+	Port uint16
 	Url string
 }
 
-func NewRestful(host string, port int16) *Restful {
+func NewRestful(host string, port uint16) *Restful {
 	url := fmt.Sprintf("http://%s:%d", host, port)
 	return &Restful{host, port, url}
 }

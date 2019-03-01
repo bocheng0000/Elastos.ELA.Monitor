@@ -16,16 +16,24 @@ type Configuration struct {
 	AppName  string	`json:"AppName"`
 	Log *LogConfig	`json:"Log"`
 	Nodes *Nodes	`json:"Nodes"`
+	EMail *EMail	`json:"EMail"`
 }
 
 type Nodes struct {
 	MainChain *MainChain	`json:"MainChain"`
 }
 
+type EMail struct {
+	Host 		string		`json:"Host"`
+	UserName 	string		`json:"UserName"`
+	PassWord 	string		`json:"PassWord"`
+	NotifyUser 	[]string	`json:"NotifyUser"`
+}
+
 type MainChain struct {
 	Host string					`json:"Host"`
-	RpcPort int16				`json:"RpcPort"`
-	RestfulPort int16			`json:"RestfulPort"`
+	RpcPort uint16				`json:"RpcPort"`
+	RestfulPort uint16			`json:"RestfulPort"`
 	JarServer *JarServer		`json:"JarServer"`
 	LogPath string				`json:"LogPath"`
 	LogFreshInterval int64		`json:"LogFreshInterval"`

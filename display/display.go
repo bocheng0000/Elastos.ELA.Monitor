@@ -3,18 +3,18 @@ package display
 import (
 	"bytes"
 	"fmt"
+	"github.com/elastos/Elastos.ELA.Monitor/utility/utility"
 	"github.com/shirou/gopsutil/cpu"
 	"path"
 	"time"
 
-	"github.com/shirou/gopsutil/mem"
 	"github.com/elastos/Elastos.ELA.Monitor/config"
 	"github.com/elastos/Elastos.ELA.Monitor/logparse"
 	"github.com/elastos/Elastos.ELA.Monitor/models"
 	"github.com/elastos/Elastos.ELA.Monitor/nodes"
-	"github.com/elastos/Elastos.ELA.Monitor/utility/convert"
 	"github.com/elastos/Elastos.ELA.Monitor/utility/error"
 	"github.com/elastos/Elastos.ELA.Monitor/utility/log"
+	"github.com/shirou/gopsutil/mem"
 )
 
 type Display struct {
@@ -57,10 +57,10 @@ func (display *Display)Start(logData *logparse.LogData, logParse *logparse.LogPa
 }
 
 func (display *Display)Show() {
-	log.Infof("-------------- %s --------------", config.ConfigManager.MonitorConfig.AppName)
-	log.Infof("Version: %s \t Height: %d \t CPUUsed: %f%% \t MemoryUsed: %f%%",
+	log.Infof("------------------------ %s ------------------------", config.ConfigManager.MonitorConfig.AppName)
+	log.Infof("Version: %s \t Height: %d \t CPUUsed: %.2f%% \t MemoryUsed: %.2f%%",
 		display.Content.Version, display.Content.Height, display.Content.CPUUsed, display.Content.MemoryUsed)
-	log.Infof("Host: %s \t RpcPort: %d \t RestfulPort: %d", display.Content.Version, display.Content.RpcPort, display.Content.RestfulPort)
+	log.Infof("Host: %s \t RpcPort: %d \t RestfulPort: %d", display.Content.Host, display.Content.RpcPort, display.Content.RestfulPort)
 
 	log.Info("Network:")
 	var hostsBuf bytes.Buffer
@@ -72,41 +72,45 @@ func (display *Display)Show() {
 	log.Info("View:")
 	if display.View == nil {
 		log.Warn("No available view data")
+	} else {
+		log.Infof("Change times: %d", display.View.ChangeTimes)
+		log.Infof("On duty producer: %s \t %s", display.View.OnDutyProducer.NickName, display.View.OnDutyProducer.OwnerPublicKey)
+		log.Infof("Proposal: Total: %d \t Approval: %d \t Reject: %d", display.View.Proposal.Total, len(display.View.Proposal.Approval), len(display.View.Proposal.Reject))
+		log.Info("Producers:")
+		for index := 0; index < len(*display.View.Producers); index ++ {
+			log.Infof("NickName: %s \t NodePublicKey: %s \t Vote: %d \t IsActive: %v",
+				(*display.View.Producers)[index].NickName,
+				(*display.View.Producers)[index].NodePublicKey,
+				(*display.View.Producers)[index].Vote,
+				(*display.View.Producers)[index].IsActive)
+		}
 	}
-	log.Infof("Change times: %d", display.View.ChangeTimes)
-	log.Infof("On duty producer: %s \t %s", display.View.OnDutyProducer.NickName, display.View.OnDutyProducer.OwnerPublicKey)
-	log.Infof("Proposal: Total: %s \t Approval: %s \t Decline: %s", len(display.View.Proposal.Approval), len(display.View.Proposal.Decline))
-	log.Info("Producers:")
-	for index := 0; index < len(*display.View.Producers); index ++ {
-		log.Infof("NickName: %s \t NodePublicKey: %s \t Vote: %s \t IsActive: %v",
-			(*display.View.Producers)[index].NickName,
-			(*display.View.Producers)[index].NodePublicKey,
-			(*display.View.Producers)[index].Vote,
-			(*display.View.Producers)[index].IsActive)
-	}
+
 
 	log.Info("Evil:")
 	if display.Evil == nil {
 		log.Warn("No available evil data")
-	}
-	for index := 0; index < len(*display.Evil.Producers); index ++ {
-		log.Infof("NickName: %s \t NodePublicKey: %s \t Vote: %s \t IsActive: %v \t Evidence: %s",
-			(*display.Evil.Producers)[index].NickName,
-			(*display.Evil.Producers)[index].NodePublicKey,
-			(*display.Evil.Producers)[index].Vote,
-			(*display.Evil.Producers)[index].IsActive,
-			(*display.Evil.Producers)[index].Evidence)
+	} else {
+		for index := 0; index < len(*display.Evil.Producers); index ++ {
+			log.Infof("NickName: %s \t NodePublicKey: %s \t Vote: %d \t IsActive: %v \t Evidence: %s",
+				(*display.Evil.Producers)[index].NickName,
+				(*display.Evil.Producers)[index].NodePublicKey,
+				(*display.Evil.Producers)[index].Vote,
+				(*display.Evil.Producers)[index].IsActive,
+				(*display.Evil.Producers)[index].Evidence)
+		}
 	}
 
 	log.Info("NextView:")
 	if display.NextView == nil {
 		log.Warn("No available next view data")
-	}
-	for index := 0; index < len(*display.NextView.Producers); index ++ {
-		log.Infof("NickName: %s \t NodePublicKey: %s \t Vote: %s \t",
-			(*display.NextView.Producers)[index].NickName,
-			(*display.NextView.Producers)[index].NodePublicKey,
-			(*display.NextView.Producers)[index].Vote)
+	} else {
+		for index := 0; index < len(*display.NextView.Producers); index ++ {
+			log.Infof("NickName: %s \t NodePublicKey: %s \t Vote: %d \t",
+				(*display.NextView.Producers)[index].NickName,
+				(*display.NextView.Producers)[index].NodePublicKey,
+				(*display.NextView.Producers)[index].Vote)
+		}
 	}
 }
 
@@ -154,22 +158,35 @@ func (display *Display) initView(logData *logparse.LogData, ela *nodes.Ela, list
 	var onDutyProducer *ProducerMonitor
 	var producerMonitors []ProducerMonitor
 	for index := 0; index < len(listProducers.Producers); index ++ {
-		producerMonitors[index] = ProducerMonitor {
+		vote, _ := utility.ElaStringToSelaInt64(listProducers.Producers[index].Votes, 64)
+		producerMonitors = append(producerMonitors, ProducerMonitor {
 			listProducers.Producers[index].NickName,
 			listProducers.Producers[index].OwnerPublicKey,
 			listProducers.Producers[index].NodePublicKey,
 			0,
-			convert.StringToInt64(listProducers.Producers[index].Votes, 0),
+			vote,
 			listProducers.Producers[index].Active,
 			"",
-		}
+		})
 
 		if listProducers.Producers[index].OwnerPublicKey == currentView.OnDutyArbitrator {
 			onDutyProducer = &producerMonitors[index]
 		}
 	}
 
-	var approvals, declines []*string
+	if onDutyProducer == nil {
+		onDutyProducer = &ProducerMonitor{
+			"CRC Producer",
+			currentView.OnDutyArbitrator,
+			currentView.OnDutyArbitrator,
+			0,
+			0,
+			true,
+			"",
+		}
+	}
+
+	var approvals, rejects []*string
 	for voteArrived := logData.VoteArrived.Front(); voteArrived != nil; voteArrived = voteArrived.Next() {
 		vote := *voteArrived.Value.(*models.VoteArrivedMessage)
 		if display.CurrentConsensusTime.After(vote.LogTime) {
@@ -179,14 +196,14 @@ func (display *Display) initView(logData *logparse.LogData, ela *nodes.Ela, list
 		if vote.Result {
 			approvals = append(approvals, &vote.Signer)
 		} else {
-			declines = append(declines, &vote.Signer)
+			rejects = append(rejects, &vote.Signer)
 		}
 	}
 
 	proposal := Proposal {
 		uint8(logData.VoteArrived.Len()),
 		approvals,
-		declines,
+		rejects,
 	}
 
 	return &View{currentView.Offset,onDutyProducer,&proposal,&producerMonitors}
@@ -194,29 +211,32 @@ func (display *Display) initView(logData *logparse.LogData, ela *nodes.Ela, list
 
 func (display *Display) initEvil(logData *logparse.LogData, ela *nodes.Ela, listProducers *models.ListProducersResponse) *Evil {
 	var producerMonitors []ProducerMonitor
-	producerMonitors[0] = ProducerMonitor {
+	vote, _ := utility.ElaStringToSelaInt64(listProducers.Producers[0].Votes, 64)
+	producerMonitors = append(producerMonitors, ProducerMonitor {
 		listProducers.Producers[0].NickName,
 		listProducers.Producers[0].OwnerPublicKey,
 		listProducers.Producers[0].NodePublicKey,
 		0,
-		convert.StringToInt64(listProducers.Producers[0].Votes, 0),
+		vote,
 		listProducers.Producers[0].Active,
 		"",
-	}
+	})
 
 	return &Evil{&producerMonitors}
 }
 
 func (display *Display) initNextView(logData *logparse.LogData, ela *nodes.Ela, listProducers *models.ListProducersResponse) *NextView {
 	var producerMonitors []ProducerMonitor
-	producerMonitors[0] = ProducerMonitor {
+	vote, _ := utility.ElaStringToSelaInt64(listProducers.Producers[0].Votes, 64)
+	producerMonitors = append(producerMonitors, ProducerMonitor {
 		listProducers.Producers[0].NickName,
 		listProducers.Producers[0].OwnerPublicKey,
 		listProducers.Producers[0].NodePublicKey,
 		0,
-		convert.StringToInt64(listProducers.Producers[0].Votes, 0),
+		vote,
 		listProducers.Producers[0].Active,
 		"",
-	}
+	})
+
 	return &NextView{&producerMonitors}
 }

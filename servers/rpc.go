@@ -12,11 +12,11 @@ import (
 
 type Rpc struct {
 	Host string
-	Port int16
+	Port uint16
 	Url string
 }
 
-func NewRpc(host string, port int16) *Rpc {
+func NewRpc(host string, port uint16) *Rpc {
 	url := fmt.Sprintf("http://%s:%d", host, port)
 	return &Rpc{host, port, url}
 }

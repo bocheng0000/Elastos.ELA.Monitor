@@ -19,13 +19,17 @@ func init() {
 
 func main() {
 	log.Info("Welcome To Elastos ELA Monitor")
+
+	//err := email.SendMonitorEMail("Elastos ELA Monitor Notify Email", "Hello Wen.Zhang")
+	//errorhelper.Warn(err, "send email test failed!")
+
 	mainChain := config.ConfigManager.MonitorConfig.Nodes.MainChain
 
 	logData := logparse.NewLogData()
 	logParse := logparse.NewLogParse()
 	elaNode := nodes.NewEla(mainChain)
-	display := display.NewDisplay(nil, nil, nil, nil, nil)
-	display.Start(logData, logParse, elaNode)
+	displayer := display.NewDisplay(nil, nil, nil, nil, nil)
+	displayer.Start(logData, logParse, elaNode)
 
 	//monitors.ProducerMonitor.Start(elaNode)
 }
