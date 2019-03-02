@@ -16,8 +16,15 @@ type Height struct {
 }
 
 type RpcResponse struct {
-	Error string 		`json:"error"`
-	Id int16 			`json:"id"`
+	Error 	string 		`json:"error"`
+	Id 		int16 		`json:"id"`
 	JsonRpc string 		`json:"jsonrpc"`
-	Result interface{} 	`json:"result"`
+	Result 	interface{} `json:"result"`
+}
+
+type DposPeersInfo struct {
+	OwnerPublicKey	string	`json:"ownerpublickey"`
+	NodePublicKey	string 	`json:"nodepublickey"`
+	Ip				string	`json:"ip"`
+	ConnectionState string 	`json:"connstate"`
 }

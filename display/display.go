@@ -1,8 +1,6 @@
 package display
 
 import (
-	"bytes"
-	"fmt"
 	"github.com/elastos/Elastos.ELA.Monitor/utility/utility"
 	"github.com/shirou/gopsutil/cpu"
 	"path"
@@ -20,13 +18,13 @@ import (
 type Display struct {
 	CurrentConsensusTime	time.Time
 	Content					*Content
-	Networks    			*[]string
+	Networks    			*Network
 	View					*View
 	Evil					*Evil
 	NextView				*NextView
 }
 
-func NewDisplay(content *Content, networks *[]string, view *View, evil *Evil, nextView *NextView) *Display {
+func NewDisplay(content *Content, networks *Network, view *View, evil *Evil, nextView *NextView) *Display {
 	return &Display{
 		Content: content,
 		Networks: networks,
@@ -63,11 +61,12 @@ func (display *Display)Show() {
 	log.Infof("Host: %s \t RpcPort: %d \t RestfulPort: %d", display.Content.Host, display.Content.RpcPort, display.Content.RestfulPort)
 
 	log.Info("Network:")
-	var hostsBuf bytes.Buffer
-	for index := 0; index < len(*display.Networks); index ++ {
-		hostsBuf.WriteString(fmt.Sprintf("%s ", (*display.Networks)[index]))
-	}
-	log.Info(hostsBuf.String())
+	log.Infof("Total: %d \t TwoWayConnection: %d \t OutboundOnly: %d \t InboundOnly: %d \t NoneConnection: %d",
+		display.Networks.Total,
+		display.Networks.TwoWayConnection,
+		display.Networks.InboundOnly,
+		display.Networks.OutboundOnly,
+		display.Networks.NoneConnection)
 
 	log.Info("View:")
 	if display.View == nil {
@@ -120,7 +119,7 @@ func (display *Display) initDisplay(logData *logparse.LogData, ela *nodes.Ela) {
 
 	display.CurrentConsensusTime = display.initCurrentConsensusTime(logData)
 	display.Content = display.initContent(logData, ela)
-	display.Networks = display.initNetworks(logData)
+	display.Networks = display.initNetworks(logData, ela)
 	display.View = display.initView(logData, ela, listProducers)
 	display.Evil = display.initEvil(logData, ela, listProducers)
 	display.NextView = display.initNextView(logData, ela, listProducers)
@@ -142,11 +141,28 @@ func (display *Display) initContent(logData *logparse.LogData, ela *nodes.Ela) *
 	return &Content{logData.Version, height, cpuPercent[0],virtualMemory.UsedPercent,ela.Host, ela.Rpc.Port, ela.Restful.Port}
 }
 
-func (display *Display) initNetworks(logData *logparse.LogData) *[]string {
-	if logData.Network.Len() == 0 {
-		return &[]string{"Network unavailable!"}
+func (display *Display) initNetworks(logData *logparse.LogData, ela *nodes.Ela) *Network {
+	netWork := Network{0,0,0,0,0}
+	dposPeersInfos, err := ela.Rpc.GetDposPeersInfos()
+	if err != nil {
+		return &netWork
 	}
-	return (*logData.Network.Back().Value.(*models.Network)).NbrHosts
+
+	netWork.Total = uint8(len(*dposPeersInfos))
+	for _, dposPeersInfo := range *dposPeersInfos {
+		switch dposPeersInfo.ConnectionState {
+		case "2WayConnection":
+			netWork.TwoWayConnection ++
+		case "OutboundOnly":
+			netWork.OutboundOnly ++
+		case "InboundOnly":
+			netWork.InboundOnly ++
+		case "NoneConnection":
+			netWork.NoneConnection ++
+		default:
+		}
+	}
+	return &netWork
 }
 
 func (display *Display) initView(logData *logparse.LogData, ela *nodes.Ela, listProducers *models.ListProducersResponse) *View {

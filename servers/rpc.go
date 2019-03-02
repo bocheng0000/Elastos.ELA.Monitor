@@ -21,13 +21,26 @@ func NewRpc(host string, port uint16) *Rpc {
 	return &Rpc{host, port, url}
 }
 
+func (rpc *Rpc) GetDposPeersInfos() (*[]models.DposPeersInfo, error) {
+	response, err :=rpc.callAndReadRpc("getdpospeersinfo", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	dposPeersInfos := []models.DposPeersInfo{}
+	err = mapstructure.Decode(response.Result, dposPeersInfos)
+	errorhelper.Warn(err, "decode block failed!")
+
+	return &dposPeersInfos, err
+}
+
 func (rpc *Rpc) GetChainHeight() (uint32, error) {
-	response, err :=rpc.GetBlockCount()
+	count, err := rpc.GetBlockCount()
 	if err != nil {
 		return 0, err
 	}
 
-	return response - 1, err
+	return count - 1, err
 }
 
 func (rpc *Rpc) GetBlockCount() (uint32, error) {

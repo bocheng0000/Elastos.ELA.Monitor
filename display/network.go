@@ -1,8 +1,9 @@
 package display
 
-import "time"
-
-type Network2 struct {
-	LogTime		time.Time
-	NbrHosts	*[]string
+type Network struct {
+	Total				uint8
+	NoneConnection		uint8
+	OutboundOnly		uint8
+	InboundOnly			uint8
+	TwoWayConnection	uint8
 }
