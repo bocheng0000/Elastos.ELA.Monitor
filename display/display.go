@@ -126,11 +126,11 @@ func (display *Display) initDisplay(logData *logparse.LogData, ela *nodes.Ela) {
 }
 
 func (display *Display) initCurrentConsensusTime(logData *logparse.LogData) time.Time {
-	if logData.ConsensusStarted.Len() == 0 {
+	if logData.ChangeView.Len() == 0 {
 		return time.Now().AddDate(0,0,-1)
 	}
 
-	return (*logData.ConsensusStarted.Back().Value.(*models.ConsensusMessage)).LogTime
+	return (*logData.ChangeView.Back().Value.(*time.Time))
 }
 
 func (display *Display) initContent(logData *logparse.LogData, ela *nodes.Ela) *Content {
@@ -150,7 +150,7 @@ func (display *Display) initNetworks(logData *logparse.LogData, ela *nodes.Ela) 
 
 	netWork.Total = uint8(len(*dposPeersInfos))
 	for _, dposPeersInfo := range *dposPeersInfos {
-		switch dposPeersInfo.ConnectionState {
+		switch dposPeersInfo.ConnectState {
 		case "2WayConnection":
 			netWork.TwoWayConnection ++
 		case "OutboundOnly":

@@ -15,6 +15,10 @@ type Height struct {
 	Height uint32	`json:"height"`
 }
 
+//type DposPeersInfoParameter struct {
+//	Count uint8	`json:"count"`
+//}
+
 type RpcResponse struct {
 	Error 	string 		`json:"error"`
 	Id 		int16 		`json:"id"`
@@ -23,8 +27,8 @@ type RpcResponse struct {
 }
 
 type DposPeersInfo struct {
-	OwnerPublicKey	string	`json:"ownerpublickey"`
-	NodePublicKey	string 	`json:"nodepublickey"`
-	Ip				string	`json:"ip"`
-	ConnectionState string 	`json:"connstate"`
+	OwnerPublicKey string `json:"ownerpublickey"`
+	NodePublicKey  string `json:"nodepublickey"`
+	Ip             string `json:"ip"`
+	ConnectState   string `json:"connectstate"`
 }

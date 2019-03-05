@@ -10,6 +10,7 @@ type LogData struct {
 	ProposalFinished 	*list.List
 	ConsensusStarted 	*list.List
 	ConsensusFinished 	*list.List
+	ChangeView 			*list.List
 	VoteArrived 		*list.List
 }
 
@@ -22,6 +23,7 @@ func NewLogData() *LogData {
 		ProposalFinished: list.New(),
 		ConsensusStarted: list.New(),
 		ConsensusFinished: list.New(),
+		ChangeView: list.New(),
 		VoteArrived: list.New(),
 	}
 }

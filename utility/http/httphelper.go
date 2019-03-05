@@ -10,10 +10,11 @@ import (
 
 func Post(url, data string) ([]byte, error){
 	response, err := http.Post(url, "application/json", strings.NewReader(data))
-	if err != nil {
+	if response == nil || err != nil {
 		log.Errorf("http post failed: %+v", err)
 		log.Errorf("http url is %s", url)
 		log.Errorf("data is %+v", data)
+		return nil, err
 	}
 
 	defer response.Body.Close()

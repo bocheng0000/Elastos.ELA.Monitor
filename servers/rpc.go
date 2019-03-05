@@ -22,14 +22,33 @@ func NewRpc(host string, port uint16) *Rpc {
 }
 
 func (rpc *Rpc) GetDposPeersInfos() (*[]models.DposPeersInfo, error) {
+	//data := models.DposPeersInfoParameter{count}
 	response, err :=rpc.callAndReadRpc("getdpospeersinfo", nil)
 	if err != nil {
 		return nil, err
 	}
 
+	type connectState struct {
+		Ip             string `json:"ip"`
+		ConnectState   string `json:"connectstate"`
+	}
+
 	dposPeersInfos := []models.DposPeersInfo{}
-	err = mapstructure.Decode(response.Result, dposPeersInfos)
-	errorhelper.Warn(err, "decode block failed!")
+	datas := response.Result.(map[string]interface{})
+	for key, _ := range datas {
+		value := datas[key].(connectState)
+		dposPeersInfo := models.DposPeersInfo {
+			key,
+			key,
+			value.Ip,
+			value.ConnectState,
+		}
+		dposPeersInfos = append(dposPeersInfos, dposPeersInfo)
+	}
+
+	//dposPeersInfos := []models.DposPeersInfo{}
+	//err = mapstructure.Decode(response.Result, dposPeersInfos)
+	//errorhelper.Warn(err, "decode block failed!")
 
 	return &dposPeersInfos, err
 }

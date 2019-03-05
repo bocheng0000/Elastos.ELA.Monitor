@@ -2,17 +2,15 @@ package logparse
 
 import (
 	"github.com/elastos/Elastos.ELA.Monitor/config"
+	"github.com/elastos/Elastos.ELA.Monitor/models"
+	"github.com/elastos/Elastos.ELA.Monitor/utility/constants"
+	"github.com/elastos/Elastos.ELA.Monitor/utility/error"
+	"github.com/elastos/Elastos.ELA.Monitor/utility/file"
+	"github.com/elastos/Elastos.ELA.Monitor/utility/log"
 	"path"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/elastos/Elastos.ELA.Monitor/models"
-	"github.com/elastos/Elastos.ELA.Monitor/utility/constants"
-	"github.com/elastos/Elastos.ELA.Monitor/utility/convert"
-	"github.com/elastos/Elastos.ELA.Monitor/utility/error"
-	"github.com/elastos/Elastos.ELA.Monitor/utility/file"
-	"github.com/elastos/Elastos.ELA.Monitor/utility/log"
 )
 
 //var LogParser *LogParse
@@ -24,11 +22,11 @@ type LogParse struct {
 }
 
 func NewLogParse() *LogParse {
-	return &LogParse{CurrentLine: 0}
+	return &LogParse{CurrentLine: 1}
 }
 
 func (logParse *LogParse) ParseOldLogs(logData *LogData, logType string) (currentLogFile string) {
-	log.Info("parse old log files")
+	//logPath := &config.ConfigManager.MonitorConfig.Nodes.MainChain.LogPath
 	logPath := path.Join(config.ConfigManager.MonitorConfig.Nodes.MainChain.LogPath, logType)
 	logFiles, err := file.GetDirectoryFileNames(logPath)
 	if err != nil {
@@ -41,7 +39,7 @@ func (logParse *LogParse) ParseOldLogs(logData *LogData, logType string) (curren
 	logFiles.Remove(logFiles.Back())
 
 	for element := logFiles.Front(); element != nil; element = element.Next() {
-		logParse.RestLinePosition(0)
+		logParse.RestLinePosition(1)
 		logPath := path.Join(logPath, element.Value.(string))
 		err := logParse.ReadLogFile(logData, logPath)
 		errorhelper.Warn(err , "read log file failed!")
@@ -77,7 +75,6 @@ func (logParse *LogParse) RestLinePosition(position int64)  {
 }
 
 func (logParse *LogParse) ReadLine(logData *LogData, line string) {
-	log.Infof("------line is: %s", line)
 	switch {
 	case strings.Contains(line, constants.NodeVersion):
 		logData.Version = logParse.readVersion(line)
@@ -102,11 +99,13 @@ func (logParse *LogParse) ReadLine(logData *LogData, line string) {
 
 	case strings.Contains(line, constants.OnConsensusFinished):
 		logData.ConsensusFinished.PushBack(logParse.readOnConsensusFinished(line))
+	case strings.Contains(line, constants.ChangeView):
+		logData.ChangeView.PushBack(logParse.readChangeView(line))
 	}
 }
 
 func (logParse *LogParse) readVersion(line string) string {
-	_, version := logParse.readContent(line, constants.NodeVersion)
+	version, _ := logParse.readContent(line, constants.NodeVersion)
 	return version
 }
 
@@ -115,37 +114,43 @@ func (logParse *LogParse) readInternalNbr(line string) *models.Network {
 	content = strings.TrimLeft(content, "[")
 	content = strings.TrimRight(content, "]")
 	nbrHosts := strings.Split(content, " ")
-	network := models.Network{ logParse.parseLogTime(logTime),&nbrHosts}
+	network := models.Network{*logParse.parseLogTime(logTime),&nbrHosts}
 	return &network
 }
 
 func (logParse *LogParse) readOnViewStarted(line string) *models.ViewStart {
-	//[OnViewStarted] OnDutyArbitrator: 024babfecea0300971a6f0ad13b27519faff0ef595faf9490dc1f5f4d6e6d7f3fb, StartTime: 2019-02-21 16:20:18.2209868 +0800 CST m=+897.968341801, Offset: 8, Height: 200
 	valueMap := logParse.readProperties(line, constants.OnViewStarted)
-	startTime := convert.StringToTime(constants.LogTimeParseLayout1, (*valueMap)["StartTime"])
+	startTime := logParse.parseLogTime((*valueMap)["StartTime"])
 	offset, _ := strconv.ParseInt((*valueMap)["Offset"], 10, 16)
 	height, _ := strconv.ParseUint((*valueMap)["Height"], 10, 32)
 	viewStart := models.ViewStart{
-		logParse.parseLogTime((*valueMap)["LogTime"]),
+		*logParse.parseLogTime((*valueMap)["LogTime"]),
 		(*valueMap)["OnDutyArbitrator"],
-		startTime,
+		*startTime,
 		int16(offset),
 		uint32(height)}
 	return &viewStart
 }
 
-func (logParse *LogParse) readOnVoteStarted(line string) *models.VoteArrivedMessage {
-	//[OnVoteArrived] Signer: 024babfecea0300971a6f0ad13b27519faff0ef595faf9490dc1f5f4d6e6d7f3fb, ReceivedTime: 2019-02-18 06:45:03.863113589 +0000 UTC m=+3389.477510291, Result: true
-	valueMap := logParse.readProperties(line, constants.OnVoteArrived)
-	startTime := convert.StringToTime(constants.LogTimeParseLayout1, (*valueMap)["ReceivedTime"])
-	result, _ := strconv.ParseBool((*valueMap)["Result"])
-	voteArrived := models.VoteArrivedMessage{
-		logParse.parseLogTime((*valueMap)["LogTime"]),
-		(*valueMap)["Signer"],
-		startTime,
-		result}
-	return &voteArrived
+func (logParse *LogParse) readOnVoteStarted(line string) *models.ViewStart {
+	valueMap := logParse.readProperties(line, constants.OnViewStarted)
+	startTime := logParse.parseLogTime((*valueMap)["StartTime"])
+	offset, _ := strconv.ParseInt((*valueMap)["Offset"], 10, 16)
+	height, _ := strconv.ParseUint((*valueMap)["Height"], 10, 32)
+	viewStart := models.ViewStart{
+		*logParse.parseLogTime((*valueMap)["LogTime"]),
+		(*valueMap)["OnDutyArbitrator"],
+		*startTime,
+		int16(offset),
+		uint32(height)}
+	return &viewStart
 }
+
+func (logParse *LogParse) readChangeView(line string) *time.Time {
+	valueMap := logParse.readProperties(line, constants.ChangeView)
+	return logParse.parseLogTime((*valueMap)["LogTime"])
+}
+
 
 func (logParse *LogParse) readOnProposalArrived(line string) *models.ProposalMessage {
 	return logParse.readOnProposal(line, constants.OnProposalArrived)
@@ -157,30 +162,25 @@ func (logParse *LogParse) readOnProposalFinished(line string) *models.ProposalMe
 
 func (logParse *LogParse) readOnProposal(line, logMark string) *models.ProposalMessage {
 	valueMap := logParse.readProperties(line, logMark)
-	timeStr := (*valueMap)["EndTime"]
-	if timeStr == "" {
-		timeStr = (*valueMap)["ReceivedTime"]
-	}
-
-	proposalTime := convert.StringToTime(constants.LogTimeParseLayout1, timeStr)
+	receivedTime := logParse.parseLogTime((*valueMap)["ReceivedTime"])
 	result, _ := strconv.ParseBool((*valueMap)["Result"])
 	message := models.ProposalMessage {
-		logParse.parseLogTime((*valueMap)["LogTime"]),
+		*logParse.parseLogTime((*valueMap)["LogTime"]),
 		(*valueMap)["Proposal"],
 		(*valueMap)["BlockHash"],
-		proposalTime,
+		*receivedTime,
 		result}
 	return &message
 }
 
 func (logParse *LogParse) readOnVoteArrived(line string) *models.VoteArrivedMessage {
 	valueMap := logParse.readProperties(line, constants.OnVoteArrived)
-	receivedTime := convert.StringToTime(constants.LogTimeParseLayout1, (*valueMap)["ReceivedTime"])
+	receivedTime := logParse.parseLogTime((*valueMap)["ReceivedTime"])
 	result, _ := strconv.ParseBool((*valueMap)["Result"])
 	message := models.VoteArrivedMessage {
-		logParse.parseLogTime((*valueMap)["LogTime"]),
+		*logParse.parseLogTime((*valueMap)["LogTime"]),
 		(*valueMap)["Signer"],
-		receivedTime,
+		*receivedTime,
 		result}
 	return &message
 }
@@ -195,10 +195,10 @@ func (logParse *LogParse) readOnConsensusFinished(line string) *models.Consensus
 
 func (logParse *LogParse) readOnConsensus(line, logMark, timeProperty string) *models.ConsensusMessage {
 	valueMap := logParse.readProperties(line, logMark)
-	receivedTime := convert.StringToTime(constants.LogTimeParseLayout1, (*valueMap)[timeProperty])
+	receivedTime, _ := time.Parse(constants.LogTimeParseLayout2, (*valueMap)[timeProperty])
 	height, _ := strconv.ParseUint((*valueMap)["Height"], 10, 32)
 	message := models.ConsensusMessage {
-		logParse.parseLogTime((*valueMap)["LogTime"]),
+		*logParse.parseLogTime((*valueMap)["LogTime"]),
 		receivedTime,
 		uint32(height)}
 	return &message
@@ -210,8 +210,8 @@ func (logParse *LogParse) readProperties(line, logMark string) *map[string]strin
 	values := make(map[string]string, len(properties))
 	values["LogTime"] = logTime
 	for _, property := range properties {
-		value := strings.Split(property, ":")
-		values[strings.TrimSpace(value[0])] = strings.TrimLeft(property[len(value[0]) + 1:], " ")
+		value := strings.Split(property, ": ")
+		values[strings.TrimLeft(value[0], " ")] = strings.TrimLeft(value[1], " ")
 	}
 
 	return &values
@@ -221,14 +221,19 @@ func (logParse *LogParse) readContent(line, logMark string) (logTime, content st
 	position := strings.Index(line, logMark)
 	position = position + len(logMark)
 	content = strings.TrimLeft(line[position:], "")
-	return line[:strings.Index(line, ".")], content
+	return line[:26], content
 }
 
-func (logParse *LogParse) parseLogTime(timeStr string) time.Time {
-	timeValue := convert.StringToTime(constants.LogTimeParseLayout2, timeStr)
-	if timeValue.Year() < 2000 {
-		timeValue = convert.StringToTime(constants.LogTimeParseLayout1, timeStr)
+func (logParse *LogParse) parseLogTime(timeStr string) *time.Time {
+	timeStr = timeStr[:len(constants.LogTimeParseLayout2)]
+	logTime, err := time.Parse(constants.LogTimeParseLayout2, timeStr)
+	if err != nil {
+		logTime, err = time.Parse(constants.LogTimeParseLayout1, timeStr)
+		if err != nil {
+			log.Errorf("invalidate log time parse: %s", timeStr)
+			panic(err)
+		}
 	}
 
-	return timeValue
+	return &logTime
 }

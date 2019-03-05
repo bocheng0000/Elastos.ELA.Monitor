@@ -2,11 +2,11 @@
   "mainchain": {
     "rpc": {
       "host": "127.0.0.1",
-      "port": "13336"
+      "port": "15336"
     },
     "restful": {
       "host": "127.0.0.1",
-      "port": "13334"
+      "port": "15334"
     },
     "jarserver": {
       "host": "127.0.0.1",

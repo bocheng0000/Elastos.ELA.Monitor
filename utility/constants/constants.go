@@ -9,6 +9,7 @@ const (
 	OnViewStarted = "[OnViewStarted]"
 	OnConsensusStarted = "[OnConsensusStarted]"
 	OnConsensusFinished = "[OnConsensusFinished]"
+	ChangeView = "[ChangeView]"
 )
 
 const (
