@@ -153,16 +153,16 @@ func (logParse *LogParse) readChangeView(line string) *time.Time {
 
 
 func (logParse *LogParse) readOnProposalArrived(line string) *models.ProposalMessage {
-	return logParse.readOnProposal(line, constants.OnProposalArrived)
+	return logParse.readOnProposal(line, constants.OnProposalArrived, "ReceivedTime")
 }
 
 func (logParse *LogParse) readOnProposalFinished(line string) *models.ProposalMessage {
-	return logParse.readOnProposal(line, constants.OnProposalFinished)
+	return logParse.readOnProposal(line, constants.OnProposalFinished, "EndTime")
 }
 
-func (logParse *LogParse) readOnProposal(line, logMark string) *models.ProposalMessage {
+func (logParse *LogParse) readOnProposal(line, logMark, timeType string) *models.ProposalMessage {
 	valueMap := logParse.readProperties(line, logMark)
-	receivedTime := logParse.parseLogTime((*valueMap)["ReceivedTime"])
+	receivedTime := logParse.parseLogTime((*valueMap)[timeType])
 	result, _ := strconv.ParseBool((*valueMap)["Result"])
 	message := models.ProposalMessage {
 		*logParse.parseLogTime((*valueMap)["LogTime"]),
