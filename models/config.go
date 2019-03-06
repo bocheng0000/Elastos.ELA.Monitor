@@ -34,6 +34,7 @@ type MainChain struct {
 	Host string					`json:"Host"`
 	RpcPort uint16				`json:"RpcPort"`
 	RestfulPort uint16			`json:"RestfulPort"`
+	CRCProducers []string		`json:"CRCProducers"`
 	JarServer *JarServer		`json:"JarServer"`
 	LogPath string				`json:"LogPath"`
 	LogFreshInterval int64		`json:"LogFreshInterval"`

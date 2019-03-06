@@ -10,14 +10,20 @@
     },
     "Nodes": {
       "MainChain": {
-        "Host": "192.168.1.113",
-        "RpcPort": 35336,
-        "RestfulPort": 35334,
+        "Host": "192.168.2.155",
+        "RpcPort": 20336,
+        "RestfulPort": 20334,
         "JarServer": {
           "Binary": "127.0.0.1",
           "Host": "127.0.0.1",
           "Port": 8989
         },
+        "CRCProducers": [
+          "035a603637c8d4df0ace8266184f3b856eb92712ae46212f632de2b9a3e2412fc6",
+          "028de1fa81dbf446c0450d3dd1dd9f5ab721b83f049275537a8dc9fa994973d885",
+          "034dc35859243adcf0eb000920854a47174f3b92a700279952e061c97ddc29ea85",
+          "020b127c81b31f3cfcbe579e624cc7c5649848c21caf850086eed492d1f1d0fe31"
+        ],
         "LogPath": "D:\\DockerFiles\\elastos\\WorkSpace\\test\\onesidemultinode\\test_space\\dpos\\ela4\\elastos\\logs",
         "LogFreshInterval": 5
       }

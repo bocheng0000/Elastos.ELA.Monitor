@@ -99,6 +99,7 @@ func (logParse *LogParse) ReadLine(logData *LogData, line string) {
 
 	case strings.Contains(line, constants.OnConsensusFinished):
 		logData.ConsensusFinished.PushBack(logParse.readOnConsensusFinished(line))
+
 	case strings.Contains(line, constants.ChangeView):
 		logData.ChangeView.PushBack(logParse.readChangeView(line))
 	}
@@ -160,9 +161,9 @@ func (logParse *LogParse) readOnProposalFinished(line string) *models.ProposalMe
 	return logParse.readOnProposal(line, constants.OnProposalFinished, "EndTime")
 }
 
-func (logParse *LogParse) readOnProposal(line, logMark, timeType string) *models.ProposalMessage {
+func (logParse *LogParse) readOnProposal(line, logMark, timeName string) *models.ProposalMessage {
 	valueMap := logParse.readProperties(line, logMark)
-	receivedTime := logParse.parseLogTime((*valueMap)[timeType])
+	receivedTime := logParse.parseLogTime((*valueMap)[timeName])
 	result, _ := strconv.ParseBool((*valueMap)["Result"])
 	message := models.ProposalMessage {
 		*logParse.parseLogTime((*valueMap)["LogTime"]),
