@@ -10,7 +10,7 @@
     },
     "Nodes": {
       "MainChain": {
-        "Host": "192.168.2.155",
+        "Host": "192.168.1.113",
         "RpcPort": 20336,
         "RestfulPort": 20334,
         "JarServer": {

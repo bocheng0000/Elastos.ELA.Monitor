@@ -116,7 +116,7 @@ func (display *Display)Show() {
 
 func (display *Display) initDisplay(logData *logparse.LogData, ela *nodes.Ela) {
 	listProducers, err := ela.Rpc.GetListProducers(0, 100)
-	errorhelper.Warn(err, "init display call failed!")
+	errorhelper.Warn(err, "get list producers failed!")
 
 	display.CurrentConsensusTime = display.initCurrentConsensusTime(logData)
 	display.Content = display.initContent(logData, ela)
@@ -167,11 +167,11 @@ func (display *Display) initNetworks(logData *logparse.LogData, ela *nodes.Ela) 
 }
 
 func (display *Display) initView(logData *logparse.LogData, ela *nodes.Ela, listProducers *models.ListProducersResponse) *View {
-	if logData.ViewStarted.Len() == 0 {
+	if logData.ChangeView.Len() == 0 {
 		return nil
 	}
 
-	currentView := *logData.ViewStarted.Back().Value.(*models.ViewStart)
+	currentView := *logData.ChangeView.Back().Value.(*models.ViewStart)
 	producerMonitors := display.initProducerMonitors(listProducers)
 	onDutyProducer := display.initOnDutyProducer(currentView.OnDutyArbitrator, producerMonitors)
 	proposal := display.initProposalInfo(logData)
