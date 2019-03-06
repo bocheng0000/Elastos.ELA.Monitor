@@ -143,27 +143,27 @@ func (display *Display) initContent(logData *logparse.LogData, ela *nodes.Ela) *
 }
 
 func (display *Display) initNetworks(logData *logparse.LogData, ela *nodes.Ela) *Network {
-	netWork := Network{0,0,0,0,0}
-	dposPeersInfos, err := ela.Rpc.GetDposPeersInfos()
-	if err != nil {
-		return &netWork
-	}
-
-	netWork.Total = uint8(len(*dposPeersInfos))
-	for _, dposPeersInfo := range *dposPeersInfos {
-		switch dposPeersInfo.ConnectState {
-		case "2WayConnection":
-			netWork.TwoWayConnection ++
-		case "OutboundOnly":
-			netWork.OutboundOnly ++
-		case "InboundOnly":
-			netWork.InboundOnly ++
-		case "NoneConnection":
-			netWork.NoneConnection ++
-		default:
-		}
-	}
-	return &netWork
+	return &Network{0,0,0,0,0}
+	//dposPeersInfos, err := ela.Rpc.GetDposPeersInfos()
+	//if err != nil {
+	//	return &netWork
+	//}
+	//
+	//netWork.Total = uint8(len(*dposPeersInfos))
+	//for _, dposPeersInfo := range *dposPeersInfos {
+	//	switch dposPeersInfo.ConnectState {
+	//	case "2WayConnection":
+	//		netWork.TwoWayConnection ++
+	//	case "OutboundOnly":
+	//		netWork.OutboundOnly ++
+	//	case "InboundOnly":
+	//		netWork.InboundOnly ++
+	//	case "NoneConnection":
+	//		netWork.NoneConnection ++
+	//	default:
+	//	}
+	//}
+	//return &netWork
 }
 
 func (display *Display) initView(logData *logparse.LogData, ela *nodes.Ela, listProducers *models.ListProducersResponse) *View {
