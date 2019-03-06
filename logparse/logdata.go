@@ -16,7 +16,7 @@ type LogData struct {
 
 func NewLogData() *LogData {
 	return &LogData {
-		Version: "UnKnow",
+		Version: "UnKnown",
 		Network: list.New(),
 		ViewStarted: list.New(),
 		ProposalArrived: list.New(),

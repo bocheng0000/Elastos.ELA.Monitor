@@ -167,11 +167,11 @@ func (display *Display) initNetworks(logData *logparse.LogData, ela *nodes.Ela) 
 }
 
 func (display *Display) initView(logData *logparse.LogData, ela *nodes.Ela, listProducers *models.ListProducersResponse) *View {
-	if logData.ChangeView.Len() == 0 {
+	if logData.ViewStarted.Len() == 0 {
 		return nil
 	}
 
-	currentView := *logData.ChangeView.Back().Value.(*models.ViewStart)
+	currentView := *logData.ViewStarted.Back().Value.(*models.ViewStart)
 	producerMonitors := display.initProducerMonitors(listProducers)
 	onDutyProducer := display.initOnDutyProducer(currentView.OnDutyArbitrator, producerMonitors)
 	proposal := display.initProposalInfo(logData)
