@@ -7,6 +7,7 @@ import (
 	"github.com/elastos/Elastos.ELA.Monitor/utility/error"
 	"github.com/elastos/Elastos.ELA.Monitor/utility/file"
 	"github.com/elastos/Elastos.ELA.Monitor/utility/log"
+	"github.com/elastos/Elastos.ELA.Monitor/utility/utility"
 	"path"
 	"strconv"
 	"strings"
@@ -75,6 +76,8 @@ func (logParse *LogParse) RestLinePosition(position int64)  {
 }
 
 func (logParse *LogParse) ReadLine(logData *LogData, line string) {
+	listMaxSize := 300
+
 	switch {
 	case strings.Contains(line, constants.NodeVersion):
 		logData.Version = logParse.readVersion(line)
@@ -83,24 +86,31 @@ func (logParse *LogParse) ReadLine(logData *LogData, line string) {
 		logData.Network.PushBack(logParse.readInternalNbr(line))
 
 	case strings.Contains(line, constants.OnVoteArrived):
+		utility.ResizeList(logData.VoteArrived, listMaxSize)
 		logData.VoteArrived.PushBack(logParse.readOnVoteArrived(line))
 
 	case strings.Contains(line, constants.OnProposalArrived):
+		utility.ResizeList(logData.ProposalArrived, listMaxSize)
 		logData.ProposalArrived.PushBack(logParse.readOnProposalArrived(line))
 
 	case strings.Contains(line, constants.OnProposalFinished):
+		utility.ResizeList(logData.ProposalFinished, listMaxSize)
 		logData.ProposalFinished.PushBack(logParse.readOnProposalFinished(line))
 
 	case strings.Contains(line, constants.OnViewStarted):
+		utility.ResizeList(logData.ViewStarted, listMaxSize)
 		logData.ViewStarted.PushBack(logParse.readOnViewStarted(line))
 
 	case strings.Contains(line, constants.OnConsensusStarted):
+		utility.ResizeList(logData.ConsensusStarted, listMaxSize)
 		logData.ConsensusStarted.PushBack(logParse.readOnConsensusStarted(line))
 
 	case strings.Contains(line, constants.OnConsensusFinished):
+		utility.ResizeList(logData.ConsensusFinished, listMaxSize)
 		logData.ConsensusFinished.PushBack(logParse.readOnConsensusFinished(line))
 
 	case strings.Contains(line, constants.ChangeView):
+		utility.ResizeList(logData.ChangeView, listMaxSize)
 		logData.ChangeView.PushBack(logParse.readChangeView(line))
 	}
 }

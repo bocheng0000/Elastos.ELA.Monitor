@@ -1,6 +1,7 @@
 package utility
 
 import (
+	"container/list"
 	"fmt"
 	"github.com/elastos/Elastos.ELA.Monitor/utility/constants"
 	"github.com/elastos/Elastos.ELA.Monitor/utility/error"
@@ -16,4 +17,21 @@ func ElaStringToSelaInt64(input string, bitSize int) (int64, error) {
 	}
 
 	return int64(value), err
+}
+
+func ResizeList(l *list.List, maxSize int) {
+	if l.Len() <= maxSize {
+		return
+	}
+
+	count := l.Len() - maxSize
+
+	for {
+		if count == 0 {
+			break
+		}
+
+		l.Remove(l.Front())
+		count --
+	}
 }

@@ -86,7 +86,6 @@ func (display *Display)Show() {
 		}
 	}
 
-
 	log.Info("Evil:")
 	if display.Evil == nil {
 		log.Warn("No available evil data")
@@ -236,8 +235,6 @@ func (display *Display) initProposalInfo(logData *logparse.LogData) *Proposal {
 		if display.CurrentConsensusTime.After(vote.LogTime) {
 			continue
 		}
-
-		log.Infof("----display.CurrentConsensusTime is %v and vote.LogTime is %v", display.CurrentConsensusTime, vote.LogTime)
 
 		if vote.Result {
 			approvals = append(approvals, &vote.Signer)
